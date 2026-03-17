@@ -112,6 +112,7 @@
             letter-spacing: -1px;
             background: linear-gradient(to right, #fff, var(--primary));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -517,6 +518,104 @@
             text-align: center;
             cursor: pointer;
         }
+
+        /* Premium Calendar Styles */
+        .cal-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-bounce);
+        }
+
+        .cal-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 32px;
+            width: 100%;
+            max-width: 380px;
+            transform: scale(0.9);
+            transition: all 0.4s var(--ease-bounce);
+        }
+
+        .cal-modal.active .cal-card {
+            transform: scale(1);
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .cal-month-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+
+        .cal-day-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .cal-day:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border);
+        }
+
+        .cal-day.today {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .cal-day.selected {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .cal-day.other-month {
+            opacity: 0.2;
+        }
     </style>
 </head>
 <body>
@@ -568,8 +667,7 @@
             <button class="date-btn" onclick="changeDate(-1)">
                 <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
             </button>
-            <div class="current-date-display" id="selected-date-display" onclick="document.getElementById('date-picker').showPicker()">Today</div>
-            <input type="date" id="date-picker" style="display:none" onchange="setDate(this.value)">
+            <div class="current-date-display" id="selected-date-display" onclick="openCalendar()">Today</div>
             <button class="date-btn" onclick="changeDate(1)">
                 <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"></path></svg>
             </button>
@@ -610,7 +708,30 @@
         </div>
     </div>
 
-    <script>
+    <!-- Calendar UI -->
+    <div id="cal-modal" class="cal-modal" onclick="closeCalendar(event)">
+        <div class="cal-card" onclick="event.stopPropagation()">
+            <div class="cal-header">
+                <button class="date-btn" onclick="moveCalendarMonth(-1)">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
+                </button>
+                <div class="cal-month-title" id="cal-month-title">March 2026</div>
+                <button class="date-btn" onclick="moveCalendarMonth(1)">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"></path></svg>
+                </button>
+            </div>
+            <div class="cal-grid" id="cal-grid">
+                <div class="cal-day-label">S</div>
+                <div class="cal-day-label">M</div>
+                <div class="cal-day-label">T</div>
+                <div class="cal-day-label">W</div>
+                <div class="cal-day-label">T</div>
+                <div class="cal-day-label">F</div>
+                <div class="cal-day-label">S</div>
+                <!-- Days injected here -->
+            </div>
+        </div>
+    </div>
         const API = 'api.php';
         const AUTH = 'auth.php';
         const todoInput = document.getElementById('todo-input');
@@ -620,6 +741,7 @@
         let tasks = [];
         let isSignup = false;
         let selectedDate = new Date().toISOString().split('T')[0];
+        let calBaseDate = new Date();
 
         function updateClock() {
             const now = new Date();
@@ -649,6 +771,60 @@
             const d = new Date(selectedDate);
             d.setDate(d.getDate() + days);
             setDate(d.toISOString().split('T')[0]);
+        }
+
+        // Calendar Logic
+        function openCalendar() {
+            calBaseDate = new Date(selectedDate);
+            renderCalendar();
+            document.getElementById('cal-modal').classList.add('active');
+        }
+
+        function closeCalendar(e) {
+            document.getElementById('cal-modal').classList.remove('active');
+        }
+
+        function moveCalendarMonth(off) {
+            calBaseDate.setMonth(calBaseDate.getMonth() + off);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('cal-grid');
+            const title = document.getElementById('cal-month-title');
+            
+            // Clear current days
+            const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            grid.innerHTML = labels.map(l => `<div class="cal-day-label">${l}</div>`).join('');
+
+            const year = calBaseDate.getFullYear();
+            const month = calBaseDate.getMonth();
+            title.textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const prevLastDate = new Date(year, month, 0).getDate();
+
+            // Previous Month Days
+            for (let i = firstDay; i > 0; i--) {
+                const day = prevLastDate - i + 1;
+                grid.innerHTML += `<div class="cal-day other-month">${day}</div>`;
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Current Month Days
+            for (let i = 1; i <= lastDate; i++) {
+                const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const isToday = dStr === todayStr;
+                const isSelected = dStr === selectedDate;
+                grid.innerHTML += `<div class="cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${dStr}')">${i}</div>`;
+            }
+        }
+
+        function selectCalDate(dStr) {
+            setDate(dStr);
+            closeCalendar();
         }
 
         async function init() {
@@ -741,14 +917,19 @@
                     li.className = `todo-item ${isDone ? 'done' : ''}`;
                     li.id = `task-${t.id}`;
                     li.innerHTML = `
-                        <div class="checkbox" onclick="toggle(${t.id})">
+                        <div class="checkbox">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
-                        <div class="todo-text" onclick="toggle(${t.id})">${t.text}</div>
-                        <button class="del-btn" onclick="remove(${t.id})">
+                        <div class="todo-text">${t.text}</div>
+                        <button class="del-btn">
                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"></path></svg>
                         </button>
                     `;
+                    
+                    li.querySelector('.checkbox').onclick = () => toggle(t.id);
+                    li.querySelector('.todo-text').onclick = () => toggle(t.id);
+                    li.querySelector('.del-btn').onclick = () => remove(t.id);
+                    
                     listEl.appendChild(li);
                 });
             }
