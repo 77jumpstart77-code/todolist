@@ -47,6 +47,7 @@
             margin-bottom: 10px;
             background: linear-gradient(to right, #a78bfa, #f472b6);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -145,10 +146,6 @@
         async function loadStats() {
             try {
                 const response = await fetch('api.php?action=stats');
-                if (response.status === 401) {
-                    window.location.href = 'index.html';
-                    return;
-                }
                 const data = await response.json();
                 
                 renderChart(data);

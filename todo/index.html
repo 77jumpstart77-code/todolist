@@ -524,11 +524,7 @@
     <div class="app-bg"></div>
     <div class="aurora-overlay"></div>
 
-    <div class="container hidden" id="main-container">
-        <div class="user-info">
-            <span id="user-display">User</span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
+    <div class="container" id="main-container">
         <!-- New Clock Panel -->
         <div class="clock-panel" id="clock-container">
             <div class="clock-time" id="clock-time">00:00:00</div>
@@ -598,18 +594,6 @@
         </div>
     </div>
 
-    <!-- Auth UI -->
-    <div id="auth-overlay" class="auth-overlay">
-        <div class="auth-card">
-            <h1 id="auth-title" style="margin-bottom: 24px;">Login</h1>
-            <input type="text" id="auth-user" class="auth-input" placeholder="Username">
-            <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
-            <button id="auth-submit" class="auth-btn" onclick="handleAuth()">Login</button>
-            <div id="auth-msg" style="margin-top: 16px; color: var(--danger); font-size: 0.8rem;"></div>
-            <div class="auth-switch" onclick="toggleAuthMode()" id="auth-toggle">Don't have an account? Signup</div>
-        </div>
-    </div>
-
     <script>
         const API = 'api.php';
         const AUTH = 'auth.php';
@@ -618,7 +602,6 @@
         const emptyEl = document.getElementById('empty-msg');
         
         let tasks = [];
-        let isSignup = false;
         let selectedDate = new Date().toISOString().split('T')[0];
 
         function updateClock() {
@@ -655,72 +638,11 @@
             updateClock();
             setInterval(updateClock, 1000);
             
-            checkAuth();
+            document.getElementById('main-container').classList.remove('hidden');
+            await load();
 
             document.getElementById('add-trigger').onclick = add;
             todoInput.onkeypress = (e) => { if (e.key === 'Enter') add(); };
-        }
-
-        async function checkAuth() {
-            const res = await fetch(`${AUTH}?action=status`);
-            const status = await res.json();
-            if (status.logged_in) {
-                document.getElementById('auth-overlay').classList.add('hidden');
-                document.getElementById('main-container').classList.remove('hidden');
-                document.getElementById('user-display').textContent = status.username;
-                await load();
-            } else {
-                document.getElementById('auth-overlay').classList.remove('hidden');
-                document.getElementById('main-container').classList.add('hidden');
-            }
-        }
-
-        function toggleAuthMode() {
-            isSignup = !isSignup;
-            document.getElementById('auth-title').textContent = isSignup ? 'Signup' : 'Login';
-            document.getElementById('auth-submit').textContent = isSignup ? 'Create Account' : 'Login';
-            document.getElementById('auth-toggle').textContent = isSignup ? 'Already have an account? Login' : "Don't have an account? Signup";
-        }
-
-        async function handleAuth() {
-            const user = document.getElementById('auth-user').value;
-            const pass = document.getElementById('auth-pass').value;
-            const msg = document.getElementById('auth-msg');
-            
-            if (!user || !pass) {
-                msg.textContent = 'Please fill all fields.';
-                return;
-            }
-
-            const action = isSignup ? 'signup' : 'login';
-            try {
-                const res = await fetch(`${AUTH}?action=${action}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, password: pass })
-                });
-                
-                const data = await res.json();
-                if (res.ok) {
-                    if (isSignup) {
-                        isSignup = false;
-                        toggleAuthMode();
-                        msg.style.color = 'var(--success)';
-                        msg.textContent = 'Signup successful! Please login.';
-                    } else {
-                        checkAuth();
-                    }
-                } else {
-                    msg.textContent = data.error || 'Error occurred.';
-                }
-            } catch (e) {
-                msg.textContent = 'Server connection failed.';
-            }
-        }
-
-        async function logout() {
-            await fetch(`${AUTH}?action=logout`);
-            checkAuth();
         }
 
         async function load() {

@@ -3,14 +3,8 @@ session_start();
 header('Content-Type: application/json');
 require_once 'db.php';
 
-// Check Authentication
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
-
-$user_id = $_SESSION['user_id'];
+// Use a single hardcoded user ID since authentication is removed
+$user_id = 1;
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 
