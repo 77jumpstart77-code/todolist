@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aurora Task | Modern Daily Checklist</title>
+    <title>Aurora Task | Premium Productivity</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,12 +13,13 @@
             --secondary: #ec4899;
             --accent: #06b6d4;
             --bg: #05060f;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.12);
             --text: #ffffff;
             --text-dim: #94a3b8;
             --success: #10b981;
             --danger: #ef4444;
+            --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         * {
@@ -36,114 +37,139 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            overflow-x: hidden;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* Modern Background effect */
-        .aurora-bg {
+        /* Ambient Background with Generated Voxel Image */
+        .app-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            overflow: hidden;
-            background: #05060f;
+            background: url('bg.png') no-repeat center center;
+            background-size: cover;
+            filter: blur(4px) brightness(0.4);
+            transform: scale(1.1);
         }
 
-        .blob {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            filter: blur(80px);
-            border-radius: 50%;
-            opacity: 0.15;
-            animation: move 20s infinite alternate;
-        }
-
-        .blob-2 {
-            background: linear-gradient(135deg, var(--accent), var(--primary));
-            width: 400px;
-            height: 400px;
-            right: 0;
-            bottom: 0;
-            animation: move 15s infinite alternate-reverse;
-        }
-
-        @keyframes move {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(10%, 10%); }
+        .aurora-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
         }
 
         .container {
             width: 100%;
-            max-width: 520px;
+            max-width: 540px;
             background: var(--card-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--border);
-            border-radius: 36px;
-            padding: 40px;
-            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
-            animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 40px;
+            padding: 48px;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.6);
+            animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes reveal {
-            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
+        /* Real-time Clock Panel */
+        .clock-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 12px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.8s var(--ease-bounce) 0.2s backwards;
         }
 
-        h1 {
-            font-size: 2.8rem;
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .clock-time {
+            font-size: 1.8rem;
             font-weight: 800;
-            letter-spacing: -1.5px;
-            margin-bottom: 8px;
-            background: linear-gradient(to bottom, #fff, #94a3b8);
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .date-text {
+        .clock-date {
+            text-align: right;
+        }
+
+        .clock-date .day {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .clock-date .full {
+            font-size: 0.75rem;
             color: var(--text-dim);
-            font-size: 1rem;
-            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+            text-align: center;
         }
 
         /* Dashboard Stats */
-        .dashboard {
-            display: flex;
-            gap: 12px;
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
             margin-bottom: 32px;
         }
 
-        .stat-card {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
             padding: 16px;
             text-align: center;
-            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            transition: transform 0.3s var(--ease-bounce);
         }
 
-        .stat-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
+        .stat-box:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.06);
         }
 
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .stat-box .val {
+            font-size: 1.6rem;
+            font-weight: 800;
             display: block;
         }
 
-        .stat-label {
+        .stat-box .lbl {
             font-size: 0.7rem;
             color: var(--text-dim);
             text-transform: uppercase;
@@ -152,57 +178,57 @@
         }
 
         /* Progress Bar */
-        .progress-wrap {
+        .progress-container {
             margin-bottom: 32px;
         }
 
-        .progress-info {
+        .progress-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .progress-bar {
-            height: 12px;
+            height: 10px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            border-radius: 20px;
             overflow: hidden;
             border: 1px solid var(--border);
         }
 
-        .progress-inner {
+        .progress-fill {
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 12px;
+            border-radius: 20px;
             transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
         }
 
-        /* Input Interaction */
-        .input-box {
+        /* Input */
+        .input-group {
             position: relative;
             margin-bottom: 32px;
         }
 
         input[type="text"] {
             width: 100%;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 20px 70px 20px 24px;
+            padding: 18px 60px 18px 24px;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             outline: none;
-            transition: all 0.4s ease;
+            transition: all 0.3s;
         }
 
         input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.08);
             border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
         }
 
         .add-btn {
@@ -210,13 +236,13 @@
             right: 8px;
             top: 8px;
             bottom: 8px;
-            width: 52px;
+            width: 48px;
             background: var(--primary);
             border: none;
             border-radius: 14px;
             color: white;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -224,56 +250,69 @@
 
         .add-btn:hover {
             transform: scale(1.05);
-            background: #7c3aed;
-            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
         }
 
-        /* List Items */
-        .todo-list {
-            list-style: none;
-            max-height: 400px;
+        /* Todo Area */
+        .todo-area {
+            flex: 1;
             overflow-y: auto;
-            padding-right: 5px;
+            padding-right: 8px;
         }
 
-        .todo-list::-webkit-scrollbar {
-            width: 4px;
+        .todo-area::-webkit-scrollbar { width: 4px; }
+        .todo-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .todo-list { list-style: none; }
+
+        /* Bounce Animations */
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            70% { transform: scale(0.9); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        .todo-list::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
+        @keyframes bounceOut {
+            20% { transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(0.3); }
+        }
+
+        @keyframes checkBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
         }
 
         .todo-item {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 18px 24px;
+            padding: 16px 20px;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: popIn 0.5s ease backwards;
+            transition: all 0.3s var(--ease-bounce);
+            animation: bounceIn 0.5s var(--ease-bounce) backwards;
         }
 
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .todo-item.deleting {
+            animation: bounceOut 0.5s var(--ease-bounce) forwards;
         }
 
         .todo-item:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .checkbox {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border: 2px solid var(--border);
-            border-radius: 10px;
-            margin-right: 20px;
+            border-radius: 8px;
+            margin-right: 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -285,25 +324,21 @@
         .todo-item.done .checkbox {
             background: var(--success);
             border-color: var(--success);
+            animation: checkBounce 0.4s var(--ease-bounce);
         }
 
         .checkbox svg {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             color: white;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: none;
         }
 
-        .todo-item.done .checkbox svg {
-            opacity: 1;
-            transform: scale(1);
-        }
+        .todo-item.done .checkbox svg { display: block; }
 
         .todo-text {
             flex: 1;
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text);
             transition: all 0.3s;
         }
@@ -315,236 +350,222 @@
         }
 
         .del-btn {
-            opacity: 0;
             background: none;
             border: none;
             color: var(--text-dim);
             cursor: pointer;
             padding: 8px;
             border-radius: 10px;
+            opacity: 0;
             transition: all 0.2s;
         }
 
-        .todo-item:hover .del-btn {
-            opacity: 1;
-        }
+        .todo-item:hover .del-btn { opacity: 1; }
 
         .del-btn:hover {
             color: var(--danger);
             background: rgba(239, 68, 68, 0.1);
         }
 
-        .empty-state {
+        .empty {
             text-align: center;
-            padding: 50px 0;
-            display: none;
-        }
-
-        .empty-state p {
+            padding: 40px 0;
             color: var(--text-dim);
             font-style: italic;
         }
 
-        footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            opacity: 0.5;
-        }
-
-        /* Loading Animation */
+        /* Loading Spinner */
         .loader {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-top-color: white;
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="aurora-bg">
-        <div class="blob"></div>
-        <div class="blob-2"></div>
-    </div>
+    <div class="app-bg"></div>
+    <div class="aurora-overlay"></div>
 
     <div class="container">
+        <!-- New Clock Panel -->
+        <div class="clock-panel" id="clock-container">
+            <div class="clock-time" id="clock-time">00:00:00</div>
+            <div class="clock-date">
+                <span class="day" id="clock-day">TUESDAY</span>
+                <span class="full" id="clock-date">MARCH 17, 2026</span>
+            </div>
+        </div>
+
         <header>
             <h1>Aurora Task</h1>
-            <div id="current-date" class="date-text"></div>
         </header>
 
-        <div class="dashboard">
-            <div class="stat-card">
-                <span class="stat-value" id="stat-total">0</span>
-                <span class="stat-label">Tasks</span>
+        <div class="stats">
+            <div class="stat-box">
+                <span class="val" id="stat-all">0</span>
+                <span class="lbl">Total</span>
             </div>
-            <div class="stat-card">
-                <span class="stat-value" style="color: var(--success)" id="stat-done">0</span>
-                <span class="stat-label">Done</span>
+            <div class="stat-box">
+                <span class="val" style="color: var(--success)" id="stat-done">0</span>
+                <span class="lbl">Done</span>
             </div>
-            <div class="stat-card">
-                <span class="stat-value" style="color: var(--primary)" id="stat-left">0</span>
-                <span class="stat-label">Left</span>
+            <div class="stat-box">
+                <span class="val" style="color: var(--primary)" id="stat-left">0</span>
+                <span class="lbl">Left</span>
             </div>
         </div>
 
-        <div class="progress-wrap">
-            <div class="progress-info">
-                <span>Daily Momentum</span>
-                <span id="progress-percent">0%</span>
+        <div class="progress-container">
+            <div class="progress-header">
+                <span>Momentum</span>
+                <span id="progress-val">0%</span>
             </div>
             <div class="progress-bar">
-                <div id="progress-indicator" class="progress-inner"></div>
+                <div id="progress-fill" class="progress-fill"></div>
             </div>
         </div>
 
-        <div class="input-box">
-            <input type="text" id="todo-input" placeholder="업무를 입력하고 Enter를 누르세요..." autocomplete="off">
+        <div class="input-group">
+            <input type="text" id="todo-input" placeholder="새로운 할 일을 입력하세요..." autocomplete="off">
             <button id="add-trigger" class="add-btn">
                 <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
             </button>
         </div>
 
-        <ul id="todo-list" class="todo-list">
-            <!-- Dynamic Injection -->
-        </ul>
-
-        <div id="empty-state" class="empty-state">
-            <p>오늘의 모든 목표를 달성했습니다. 완벽한 하루네요! ✨</p>
+        <div class="todo-area">
+            <ul id="todo-list" class="todo-list"></ul>
+            <div id="empty-msg" class="empty">모두 완료했습니다! 🎉</div>
         </div>
     </div>
 
     <script>
-        const API_EP = 'api.php';
+        const API = 'api.php';
         const todoInput = document.getElementById('todo-input');
-        const addTrigger = document.getElementById('add-trigger');
-        const todoList = document.getElementById('todo-list');
-        const emptyState = document.getElementById('empty-state');
+        const listEl = document.getElementById('todo-list');
+        const emptyEl = document.getElementById('empty-msg');
         
-        let localTasks = [];
+        let tasks = [];
 
-        async function initApp() {
-            setDateTime();
-            await refreshData();
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dayStr = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
-            addTrigger.addEventListener('click', handleAdd);
-            todoInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleAdd();
-            });
+            document.getElementById('clock-time').textContent = timeStr;
+            document.getElementById('clock-day').textContent = dayStr;
+            document.getElementById('clock-date').textContent = dateStr;
         }
 
-        function setDateTime() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = new Date().toLocaleDateString('ko-KR', options);
+        async function init() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            await load();
+
+            document.getElementById('add-trigger').onclick = add;
+            todoInput.onkeypress = (e) => { if (e.key === 'Enter') add(); };
         }
 
-        async function refreshData() {
-            try {
-                const res = await fetch(API_EP);
-                localTasks = await res.json();
-                renderView();
-            } catch (err) {
-                console.error('Data sync failed:', err);
-            }
+        async function load() {
+            const res = await fetch(API);
+            tasks = await res.json();
+            render();
         }
 
-        function renderView() {
-            todoList.innerHTML = '';
-            
-            if (localTasks.length === 0) {
-                emptyState.style.display = 'block';
+        function render() {
+            listEl.innerHTML = '';
+            if (tasks.length === 0) {
+                emptyEl.style.display = 'block';
             } else {
-                emptyState.style.display = 'none';
-                localTasks.forEach(task => {
-                    const finished = task.completed == 1 || task.completed === true;
-                    const item = document.createElement('li');
-                    item.className = `todo-item ${finished ? 'done' : ''}`;
-                    item.innerHTML = `
-                        <div class="checkbox" onclick="handleToggle(${task.id})">
+                emptyEl.style.display = 'none';
+                tasks.forEach(t => {
+                    const isDone = t.completed == 1 || t.completed === true;
+                    const li = document.createElement('li');
+                    li.className = `todo-item ${isDone ? 'done' : ''}`;
+                    li.id = `task-${t.id}`;
+                    li.innerHTML = `
+                        <div class="checkbox" onclick="toggle(${t.id})">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
-                        <div class="todo-text" onclick="handleToggle(${task.id})">${task.text}</div>
-                        <button class="del-btn" onclick="handleDelete(${task.id})">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <div class="todo-text" onclick="toggle(${t.id})">${t.text}</div>
+                        <button class="del-btn" onclick="remove(${t.id})">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"></path></svg>
                         </button>
                     `;
-                    todoList.appendChild(item);
+                    listEl.appendChild(li);
                 });
             }
-            syncMetrics();
+            updateStats();
         }
 
-        function syncMetrics() {
-            const total = localTasks.length;
-            const done = localTasks.filter(t => t.completed == 1 || t.completed === true).length;
+        function updateStats() {
+            const total = tasks.length;
+            const done = tasks.filter(t => t.completed == 1 || t.completed === true).length;
             const left = total - done;
             const p = total > 0 ? Math.round((done / total) * 100) : 0;
 
-            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-all').textContent = total;
             document.getElementById('stat-done').textContent = done;
             document.getElementById('stat-left').textContent = left;
-            document.getElementById('progress-indicator').style.width = p + '%';
-            document.getElementById('progress-percent').textContent = p + '%';
+            document.getElementById('progress-fill').style.width = p + '%';
+            document.getElementById('progress-val').textContent = p + '%';
         }
 
-        async function handleAdd() {
+        async function add() {
             const txt = todoInput.value.trim();
             if (!txt) return;
 
-            addTrigger.disabled = true;
-            addTrigger.innerHTML = '<div class="loader"></div>';
+            const trigger = document.getElementById('add-trigger');
+            trigger.disabled = true;
+            trigger.innerHTML = '<div class="loader"></div>';
 
-            try {
-                const res = await fetch(API_EP, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: txt })
-                });
-                const added = await res.json();
-                localTasks.unshift(added);
-                todoInput.value = '';
-                renderView();
-            } catch (err) {
-                console.error('Adding failed:', err);
-            } finally {
-                addTrigger.disabled = false;
-                addTrigger.innerHTML = '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>';
-            }
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: txt })
+            });
+            const nt = await res.json();
+            tasks.unshift(nt);
+            todoInput.value = '';
+            render();
+            
+            trigger.disabled = false;
+            trigger.innerHTML = '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>';
         }
 
-        async function handleToggle(id) {
-            try {
-                await fetch(API_EP, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                localTasks = localTasks.map(t => t.id == id ? { ...t, completed: !t.completed } : t);
-                renderView();
-            } catch (err) {
-                console.error('Toggle failed:', err);
-            }
+        async function toggle(id) {
+            await fetch(API, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            tasks = tasks.map(t => t.id == id ? { ...t, completed: !t.completed } : t);
+            
+            // Allow check animation to play before re-rendering for optimal feedback
+            const el = document.getElementById(`task-${id}`);
+            el.classList.toggle('done');
+            updateStats();
         }
 
-        async function handleDelete(id) {
-            try {
-                await fetch(`${API_EP}?id=${id}`, { method: 'DELETE' });
-                localTasks = localTasks.filter(t => t.id != id);
-                renderView();
-            } catch (err) {
-                console.error('Delete failed:', err);
-            }
+        async function remove(id) {
+            const el = document.getElementById(`task-${id}`);
+            el.classList.add('deleting');
+            
+            // Wait for bounce out animation
+            setTimeout(async () => {
+                await fetch(`${API}?id=${id}`, { method: 'DELETE' });
+                tasks = tasks.filter(t => t.id != id);
+                render();
+            }, 400);
         }
 
-        initApp();
+        init();
     </script>
 </body>
 </html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith Todo | Modern Productivity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-dim: #64748b;
+            --border: rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Nav & Theme Toggle (uiverse style) */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), #d946ef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Uiverse-inspired Toggle Switch */
+        .theme-switch {
+            --size: 2.2rem;
+            --sun-color: #ff9d00;
+            --moon-color: #7c3aed;
+            --bg-color: #333;
+            appearance: none;
+            width: var(--size);
+            height: var(--size);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.5s var(--ease);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 70%;
+            border: none;
+            outline: none;
+            background-color: var(--bg-color);
+            position: relative;
+        }
+
+        .theme-switch::before {
+            content: "";
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 3c.46 0 .9.05 1.34.14a10.03 10.03 0 0 0 8.52 8.52c.09.44.14.88.14 1.34a10 10 0 1 1-10-10z'/%3E%3C/svg%3E");
+            background-size: 60%;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: all 0.5s var(--ease);
+        }
+
+        .theme-switch:checked {
+            background-color: #eee;
+        }
+
+        .theme-switch:checked::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9d00'%3E%3Cpath d='M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 14a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM5.64 4.22a1 1 0 1 1 1.41 1.41L5.64 7.05a1 1 0 0 1-1.41-1.41l1.41-1.42zm12.72 12.72a1 1 0 1 1 1.41 1.41l-1.41 1.42a1 1 0 0 1-1.41-1.41l1.41-1.42zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H2a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM5.64 19.78a1 1 0 0 1-1.41-1.41l1.41-1.42a1 1 0 1 1 1.41 1.41l-1.42 1.42zm12.72-12.72a1 1 0 0 1-1.41-1.41l1.41-1.42a1 1 0 0 1 1.41 1.41l-1.41 1.42z'/%3E%3C/svg%3E");
+            transform: rotate(360deg);
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        /* Card System */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+            animation: fadeIn 0.8s var(--ease);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        /* Input Interaction */
+        .input-group {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 24px;
+            padding-right: 60px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s var(--ease);
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .add-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 44px;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s var(--ease);
+        }
+
+        .add-btn:hover {
+            transform: scale(1.05);
+            background: var(--primary-hover);
+        }
+
+        /* Task List with Transitions */
+        .task-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.4s var(--ease);
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            margin-right: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s var(--ease);
+            flex-shrink: 0;
+        }
+
+        .task-item.completed .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .checkbox svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .task-item.completed .checkbox svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: all 0.4s var(--ease);
+        }
+
+        .task-item.completed .task-text {
+            color: var(--text-dim);
+            text-decoration: line-through;
+            opacity: 0.6;
+            transform: translateX(10px);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-dim);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav>
+            <div class="logo">Zenith Todo</div>
+            <input type="checkbox" id="theme-toggle" class="theme-switch" onchange="toggleTheme()">
+        </nav>
+
+        <section style="margin-bottom: 40px; max-width: 600px;">
+            <div class="input-group">
+                <input type="text" id="main-input" placeholder="What needs to be done today?" autocomplete="off">
+                <button class="add-btn" onclick="addTask()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+        </section>
+
+        <div class="grid" id="task-grid">
+            <!-- Tasks will be grouped into these placeholder categories normally, or just displayed as one large grid -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">In Progress</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Active tasks for today</p>
+                    </div>
+                </div>
+                <div id="active-tasks" class="task-list">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Completed</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Successfully finished</p>
+                    </div>
+                </div>
+                <div id="completed-tasks" class="task-list">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('zenithTasks')) || [
+            { id: 1, text: 'Design new landing page', completed: false },
+            { id: 2, text: 'Meeting with dev team', completed: true },
+            { id: 3, text: 'Review performance metrics', completed: false }
+        ];
+
+        function toggleTheme() {
+            const body = document.body;
+            const toggle = document.getElementById('theme-toggle');
+            if (toggle.checked) {
+                body.setAttribute('data-theme', 'light');
+            } else {
+                body.removeAttribute('data-theme');
+            }
+        }
+
+        function render() {
+            const activeList = document.getElementById('active-tasks');
+            const completedList = document.getElementById('completed-tasks');
+            
+            activeList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            const activeItems = tasks.filter(t => !t.completed);
+            const completedItems = tasks.filter(t => t.completed);
+
+            if (activeItems.length === 0) {
+                activeList.innerHTML = '<div class="empty-state">No active tasks</div>';
+            } else {
+                activeItems.forEach(task => activeList.appendChild(createTaskElement(task)));
+            }
+
+            if (completedItems.length === 0) {
+                completedList.innerHTML = '<div class="empty-state">No completed tasks</div>';
+            } else {
+                completedItems.forEach(task => completedList.appendChild(createTaskElement(task)));
+            }
+
+            localStorage.setItem('zenithTasks', JSON.stringify(tasks));
+        }
+
+        function createTaskElement(task) {
+            const li = document.createElement('li');
+            li.className = `task-item ${task.completed ? 'completed' : ''}`;
+            li.innerHTML = `
+                <div class="checkbox" onclick="toggleTask(${task.id})">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="task-text">${task.text}</div>
+                <button class="delete-btn" onclick="deleteTask(${task.id})">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            `;
+            return li;
+        }
+
+        function addTask() {
+            const input = document.getElementById('main-input');
+            const text = input.value.trim();
+            if (text) {
+                tasks.push({ id: Date.now(), text, completed: false });
+                input.value = '';
+                render();
+            }
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+            render();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            render();
+        }
+
+        document.getElementById('main-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        render();
+    </script>
+</body>
+</html>
