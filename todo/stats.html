@@ -145,6 +145,10 @@
         async function loadStats() {
             try {
                 const response = await fetch('api.php?action=stats');
+                if (response.status === 401) {
+                    window.location.href = 'index.html';
+                    return;
+                }
                 const data = await response.json();
                 
                 renderChart(data);

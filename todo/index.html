@@ -402,17 +402,83 @@
             font-style: italic;
         }
 
-        /* Loading Spinner */
-        .loader {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Auth Overlay */
+        .auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 20px;
+            color: white;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 48px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -420,7 +486,11 @@
     <div class="app-bg"></div>
     <div class="aurora-overlay"></div>
 
-    <div class="container">
+    <div class="container hidden" id="main-container">
+        <div class="user-info">
+            <span id="user-display">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
         <!-- New Clock Panel -->
         <div class="clock-panel" id="clock-container">
             <div class="clock-time" id="clock-time">00:00:00</div>
@@ -479,13 +549,27 @@
         </div>
     </div>
 
+    <!-- Auth UI -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h1 id="auth-title" style="margin-bottom: 24px;">Login</h1>
+            <input type="text" id="auth-user" class="auth-input" placeholder="Username">
+            <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
+            <button id="auth-submit" class="auth-btn" onclick="handleAuth()">Login</button>
+            <div id="auth-msg" style="margin-top: 16px; color: var(--danger); font-size: 0.8rem;"></div>
+            <div class="auth-switch" onclick="toggleAuthMode()" id="auth-toggle">Don't have an account? Signup</div>
+        </div>
+    </div>
+
     <script>
         const API = 'api.php';
+        const AUTH = 'auth.php';
         const todoInput = document.getElementById('todo-input');
         const listEl = document.getElementById('todo-list');
         const emptyEl = document.getElementById('empty-msg');
         
         let tasks = [];
+        let isSignup = false;
 
         function updateClock() {
             const now = new Date();
@@ -501,10 +585,73 @@
         async function init() {
             updateClock();
             setInterval(updateClock, 1000);
-            await load();
+            
+            checkAuth();
 
             document.getElementById('add-trigger').onclick = add;
             todoInput.onkeypress = (e) => { if (e.key === 'Enter') add(); };
+        }
+
+        async function checkAuth() {
+            const res = await fetch(`${AUTH}?action=status`);
+            const status = await res.json();
+            if (status.logged_in) {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('main-container').classList.remove('hidden');
+                document.getElementById('user-display').textContent = status.username;
+                await load();
+            } else {
+                document.getElementById('auth-overlay').classList.remove('hidden');
+                document.getElementById('main-container').classList.add('hidden');
+            }
+        }
+
+        function toggleAuthMode() {
+            isSignup = !isSignup;
+            document.getElementById('auth-title').textContent = isSignup ? 'Signup' : 'Login';
+            document.getElementById('auth-submit').textContent = isSignup ? 'Create Account' : 'Login';
+            document.getElementById('auth-toggle').textContent = isSignup ? 'Already have an account? Login' : "Don't have an account? Signup";
+        }
+
+        async function handleAuth() {
+            const user = document.getElementById('auth-user').value;
+            const pass = document.getElementById('auth-pass').value;
+            const msg = document.getElementById('auth-msg');
+            
+            if (!user || !pass) {
+                msg.textContent = 'Please fill all fields.';
+                return;
+            }
+
+            const action = isSignup ? 'signup' : 'login';
+            try {
+                const res = await fetch(`${AUTH}?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    if (isSignup) {
+                        isSignup = false;
+                        toggleAuthMode();
+                        msg.style.color = 'var(--success)';
+                        msg.textContent = 'Signup successful! Please login.';
+                    } else {
+                        checkAuth();
+                    }
+                } else {
+                    msg.textContent = data.error || 'Error occurred.';
+                }
+            } catch (e) {
+                msg.textContent = 'Server connection failed.';
+            }
+        }
+
+        async function logout() {
+            await fetch(`${AUTH}?action=logout`);
+            checkAuth();
         }
 
         async function load() {
