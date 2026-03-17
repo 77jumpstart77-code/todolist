@@ -15,8 +15,17 @@ function clean($data) {
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query("SELECT id, text, completed, created_at FROM tasks ORDER BY created_at DESC");
-        echo json_encode($stmt->fetchAll());
+        if (isset($_GET['action']) && $_GET['action'] === 'stats') {
+            $stmt = $pdo->query("SELECT DATE(completed_at) as date, COUNT(*) as count 
+                                 FROM tasks 
+                                 WHERE completed = 1 AND completed_at IS NOT NULL 
+                                 GROUP BY DATE(completed_at) 
+                                 ORDER BY date DESC LIMIT 30");
+            echo json_encode($stmt->fetchAll());
+        } else {
+            $stmt = $pdo->query("SELECT id, text, completed, created_at, completed_at FROM tasks ORDER BY created_at DESC");
+            echo json_encode($stmt->fetchAll());
+        }
         break;
 
     case 'POST':
@@ -34,7 +43,11 @@ switch ($method) {
     case 'PUT':
         if (isset($input['id'])) {
             $id = (int)$input['id'];
-            $stmt = $pdo->prepare("UPDATE tasks SET completed = NOT completed WHERE id = ?");
+            // Toggle completed status and set/unset completed_at
+            $stmt = $pdo->prepare("UPDATE tasks SET 
+                completed = NOT completed, 
+                completed_at = IF(completed = 0, CURRENT_TIMESTAMP, NULL) 
+                WHERE id = ?");
             $stmt->execute([$id]);
             echo json_encode(['success' => true]);
         }
