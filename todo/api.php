@@ -20,6 +20,7 @@ function clean($data) {
 
 switch ($method) {
     case 'GET':
+        $date = $_GET['date'] ?? date('Y-m-d');
         if (isset($_GET['action']) && $_GET['action'] === 'stats') {
             $stmt = $pdo->prepare("SELECT DATE(completed_at) as date, COUNT(*) as count 
                                  FROM tasks 
@@ -29,8 +30,8 @@ switch ($method) {
             $stmt->execute([$user_id]);
             echo json_encode($stmt->fetchAll());
         } else {
-            $stmt = $pdo->prepare("SELECT id, text, completed, created_at, completed_at FROM tasks WHERE user_id = ? ORDER BY created_at DESC");
-            $stmt->execute([$user_id]);
+            $stmt = $pdo->prepare("SELECT id, text, completed, created_at, completed_at, target_date FROM tasks WHERE user_id = ? AND target_date = ? ORDER BY created_at DESC");
+            $stmt->execute([$user_id, $date]);
             echo json_encode($stmt->fetchAll());
         }
         break;
@@ -38,9 +39,10 @@ switch ($method) {
     case 'POST':
         if (!empty($input['text'])) {
             $cleaned_text = clean($input['text']);
-            $stmt = $pdo->prepare("INSERT INTO tasks (user_id, text) VALUES (?, ?)");
-            $stmt->execute([$user_id, $cleaned_text]);
-            echo json_encode(['id' => $pdo->lastInsertId(), 'text' => $cleaned_text, 'completed' => false]);
+            $target_date = $input['target_date'] ?? date('Y-m-d');
+            $stmt = $pdo->prepare("INSERT INTO tasks (user_id, text, target_date) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $cleaned_text, $target_date]);
+            echo json_encode(['id' => $pdo->lastInsertId(), 'text' => $cleaned_text, 'completed' => false, 'target_date' => $target_date]);
         }
         break;
 

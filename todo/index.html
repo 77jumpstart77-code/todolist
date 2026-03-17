@@ -479,6 +479,44 @@
             cursor: pointer;
             font-weight: 600;
         }
+
+        /* Date Selector Styles */
+        .date-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 32px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .date-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: white;
+        }
+
+        .current-date-display {
+            font-weight: 700;
+            font-size: 1.1rem;
+            min-width: 140px;
+            text-align: center;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -526,6 +564,17 @@
             </div>
         </div>
 
+        <div class="date-selector">
+            <button class="date-btn" onclick="changeDate(-1)">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
+            </button>
+            <div class="current-date-display" id="selected-date-display" onclick="document.getElementById('date-picker').showPicker()">Today</div>
+            <input type="date" id="date-picker" style="display:none" onchange="setDate(this.value)">
+            <button class="date-btn" onclick="changeDate(1)">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"></path></svg>
+            </button>
+        </div>
+
         <div class="progress-container">
             <div class="progress-header">
                 <span>Momentum</span>
@@ -570,6 +619,7 @@
         
         let tasks = [];
         let isSignup = false;
+        let selectedDate = new Date().toISOString().split('T')[0];
 
         function updateClock() {
             const now = new Date();
@@ -580,6 +630,25 @@
             document.getElementById('clock-time').textContent = timeStr;
             document.getElementById('clock-day').textContent = dayStr;
             document.getElementById('clock-date').textContent = dateStr;
+        }
+
+        function setDate(dateStr) {
+            selectedDate = dateStr;
+            const today = new Date().toISOString().split('T')[0];
+            const display = document.getElementById('selected-date-display');
+            
+            if (dateStr === today) {
+                display.textContent = 'Today';
+            } else {
+                display.textContent = dateStr;
+            }
+            load();
+        }
+
+        function changeDate(days) {
+            const d = new Date(selectedDate);
+            d.setDate(d.getDate() + days);
+            setDate(d.toISOString().split('T')[0]);
         }
 
         async function init() {
@@ -655,7 +724,7 @@
         }
 
         async function load() {
-            const res = await fetch(API);
+            const res = await fetch(`${API}?date=${selectedDate}`);
             tasks = await res.json();
             render();
         }
@@ -710,7 +779,7 @@
             const res = await fetch(API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: txt })
+                body: JSON.stringify({ text: txt, target_date: selectedDate })
             });
             const nt = await res.json();
             tasks.unshift(nt);

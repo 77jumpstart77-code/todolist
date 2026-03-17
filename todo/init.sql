@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     user_id INT NOT NULL,
     text VARCHAR(255) NOT NULL,
     completed TINYINT(1) DEFAULT 0,
+    target_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
